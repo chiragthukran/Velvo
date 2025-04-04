@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Velvo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: rgba(0, 255, 0, 0.8);
+        }
+
+        .notification.error {
+            background-color: rgba(255, 0, 0, 0.8);
+        }
+
+        .button-loader {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: black;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .auth-button {
+            position: relative;
+        }
+
+        .auth-button.loading .button-text {
+            visibility: hidden;
+        }
+
+        .auth-button.loading .button-loader {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <a href="index.html" class="logo">
+                <i class="fas fa-car"></i>
+                Velvo
+            </a>
+            <h2>Welcome Back!</h2>
+            <p class="auth-subtitle">Log in to continue your journey</p>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="auth-button">
+                    <span class="button-text">Login</span>
+                    <div class="button-loader"></div>
+                </button>
+            </form>
+            
+            <p class="auth-footer">
+                Don't have an account? <a href="signup.html">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = this.querySelector('button');
+            const buttonText = button.querySelector('.button-text');
+            const buttonLoader = button.querySelector('.button-loader');
+            
+            try {
+                // Show loading state
+                button.classList.add('loading');
+
+                const formData = new FormData(this);
+                const response = await fetch('backend/auth/login.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Server response:', data); // Debug log
+
+                if (data.success) {
+                    showNotification('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.role === 'customer' ? 'customer/dashboard.html' : 'driver/dashboard.html';
+                    }, 1500);
+                } else {
+                    showNotification(data.error || 'Login failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error); // Debug log
+                showNotification('An error occurred. Please try again.', 'error');
+            } finally {
+                // Reset button state if not redirecting
+                if (!button.classList.contains('success')) {
+                    button.classList.remove('loading');
+                }
+            }
+        });
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

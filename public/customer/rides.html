@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Rides</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <h2>Search Rides</h2>
+    <input type="text" id="start_location" placeholder="Start Location">
+    <button onclick="searchEndLocations()">Search End Locations</button>
+    <div id="endLocationSelect"></div>
+    <div id="ridesList"></div>
+    <script>
+        function searchEndLocations() {
+            const startLocation = document.getElementById('start_location').value;
+            if (!startLocation) {
+                alert("Please enter a start location");
+                return;
+            }
+            fetch(`../../backend/customer/search_rides.php?start_location=${encodeURIComponent(startLocation)}`)
+                .then(response => response.json())
+                .then(rides => {
+                    const endLocations = [...new Set(rides.map(ride => ride.end_location))];
+                    if (endLocations.length === 0) {
+                        document.getElementById('endLocationSelect').innerHTML = '<p>No rides available from this start location.</p>';
+                        return;
+                    }
+                    document.getElementById('endLocationSelect').innerHTML = `
+                        <select id="end_location">
+                            <option value="">Select End Location</option>
+                            ${endLocations.map(location => `<option value="${location}">${location}</option>`).join('')}
+                        </select>
+                        <button onclick="searchRides()">Search Rides</button>
+                    `;
+                });
+        }
+
+        function searchRides() {
+            const startLocation = document.getElementById('start_location').value;
+            const endLocation = document.getElementById('end_location').value;
+            if (!endLocation) {
+                alert("Please select an end location");
+                return;
+            }
+            fetch(`../../backend/customer/search_rides.php?start_location=${encodeURIComponent(startLocation)}&end_location=${encodeURIComponent(endLocation)}`)
+                .then(response => response.json())
+                .then(rides => {
+                    document.getElementById('ridesList').innerHTML = rides.map(ride => `
+                        <div>
+                            <p>Ride from ${ride.start_location} to ${ride.end_location} - $${ride.price} - Seats: ${ride.available_seats}</p>
+                            <p>Start: ${ride.start_time} - End: ${ride.end_time}</p>
+                            <p>Driver: ${ride.driver_name}</p>
+                            <button onclick="bookRide(${ride.ride_id})">Book</button>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function bookRide(rideId) {
+            const formData = new FormData();
+            formData.append('ride_id', rideId);
+            fetch('../../backend/customer/book_ride.php', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || data.error);
+                    if (data.success) searchRides();
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+Options +FollowSymLinks
+RewriteEngine On
+
+# Set default character set
+AddDefaultCharset UTF-8
+
+# Enable PHP error reporting
+php_flag display_errors on
+php_value error_reporting E_ALL
+
+# Allow cross-origin requests
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+
+# Prevent directory listing
+Options -Indexes
+
+# Deny access to .htaccess
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Deny access to files with extensions .ini, .psd, .log, .sh
+<FilesMatch "\.(ini|psd|log|sh)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Deny access to hidden files and directories
+RedirectMatch 404 /\. 

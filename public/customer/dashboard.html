@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Dashboard - Ocean</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-car"></i>
+                Ocean
+            </a>
+        </div>
+        <div class="nav-middle">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="rides.html">My Rides</a>
+            <a href="bookings.html">Book a Ride</a>
+        </div>
+        <div class="nav-right">
+            <span id="userNameDisplay" class="nav-button"></span>
+            <a href="#" onclick="logout()" class="nav-button">Logout</a>
+        </div>
+    </div>
+
+    <div class="dashboard-container" style="margin-top: 100px; padding: 20px;">
+        <h2>Welcome to Your Dashboard</h2>
+        <div id="dashboardContent">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <i class="fas fa-car"></i>
+                    <h3>Total Rides</h3>
+                    <p id="totalRides">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Upcoming Rides</h3>
+                    <p id="upcomingRides">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-history"></i>
+                    <h3>Completed Rides</h3>
+                    <p id="completedRides">Loading...</p>
+                </div>
+            </div>
+            
+            <div class="recent-activity">
+                <h3>Recent Activity</h3>
+                <div id="recentActivity">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check session and redirect if not logged in
+        fetch('../backend/auth/check_session.php?role=customer')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+                document.getElementById('userNameDisplay').textContent = data.user.name;
+                loadDashboardData();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.location.href = '../login.html';
+            });
+
+        function loadDashboardData() {
+            // Load dashboard statistics
+            fetch('../backend/customer/get_stats.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalRides').textContent = data.stats.total;
+                        document.getElementById('upcomingRides').textContent = data.stats.upcoming;
+                        document.getElementById('completedRides').textContent = data.stats.completed;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+
+            // Load recent activity
+            fetch('../backend/customer/get_recent_activity.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const activityHtml = data.activities.map(activity => `
+                            <div class="activity-item">
+                                <i class="fas ${activity.icon}"></i>
+                                <div class="activity-details">
+                                    <p>${activity.description}</p>
+                                    <small>${activity.time}</small>
+                                </div>
+                            </div>
+                        `).join('');
+                        document.getElementById('recentActivity').innerHTML = activityHtml;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function logout() {
+            fetch('../backend/auth/logout.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '../login.html';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+
+    <style>
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.2);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: rgb(255, 255, 0);
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            color: white;
+            margin: 10px 0;
+        }
+
+        .stat-card p {
+            font-size: 1.5rem;
+            color: rgb(255, 255, 0);
+            margin: 0;
+        }
+
+        .recent-activity {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 0, 0.1);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 0, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item i {
+            color: rgb(255, 255, 0);
+            font-size: 1.2rem;
+        }
+
+        .activity-details p {
+            margin: 0;
+            color: white;
+        }
+
+        .activity-details small {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .nav-button.active {
+            color: rgb(255, 255, 0);
+        }
+    </style>
+</body>
+</html>

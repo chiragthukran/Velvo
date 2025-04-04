@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book a Ride - Ocean</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-car"></i>
+                Ocean
+            </a>
+        </div>
+        <div class="nav-middle">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="rides.html">My Rides</a>
+            <a href="bookings.html" class="active">Book a Ride</a>
+        </div>
+        <div class="nav-right">
+            <span id="userNameDisplay" class="nav-button"></span>
+            <a href="#" onclick="logout()" class="nav-button">Logout</a>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 100px; padding: 20px;">
+        <h2>Book a Ride</h2>
+        
+        <!-- Search Form -->
+        <div class="search-form">
+            <form id="searchForm">
+                <div class="input-group">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" name="pickup" placeholder="Pickup Location" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-map-marker"></i>
+                    <input type="text" name="dropoff" placeholder="Drop-off Location" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-calendar"></i>
+                    <input type="datetime-local" name="ride_date" required>
+                </div>
+                <button type="submit" class="primary-button">Search Rides</button>
+            </form>
+        </div>
+
+        <!-- Available Rides -->
+        <div class="available-rides">
+            <h3>Available Rides</h3>
+            <div id="ridesList"></div>
+        </div>
+
+        <!-- My Bookings -->
+        <div class="my-bookings">
+            <h3>My Bookings</h3>
+            <div id="bookingsList"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        Developed By Spartans with <span>❤️</span>
+    </footer>
+
+    <script>
+        // Check session and redirect if not logged in
+        fetch('../backend/auth/check_session.php?role=customer')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+                document.getElementById('userNameDisplay').textContent = data.user.name;
+                loadBookings();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.location.href = '../login.html';
+            });
+
+        // Handle search form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            searchRides(formData);
+        });
+
+        function searchRides(formData) {
+            fetch('../backend/customer/search_rides.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayRides(data.rides);
+                } else {
+                    showNotification(data.error || 'No rides found', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred while searching rides', 'error');
+            });
+        }
+
+        function displayRides(rides) {
+            const ridesList = document.getElementById('ridesList');
+            if (rides.length === 0) {
+                ridesList.innerHTML = '<p>No rides found for your search criteria</p>';
+                return;
+            }
+
+            ridesList.innerHTML = rides.map(ride => `
+                <div class="ride-card">
+                    <div class="ride-info">
+                        <p><i class="fas fa-map-marker-alt"></i> From: ${ride.pickup_location}</p>
+                        <p><i class="fas fa-map-marker"></i> To: ${ride.dropoff_location}</p>
+                        <p><i class="fas fa-calendar"></i> Date: ${ride.ride_date}</p>
+                        <p><i class="fas fa-dollar-sign"></i> Fare: $${ride.fare}</p>
+                        <p><i class="fas fa-user"></i> Driver: ${ride.driver_name}</p>
+                    </div>
+                    <button onclick="bookRide(${ride.ride_id})" class="primary-button">Book Now</button>
+                </div>
+            `).join('');
+        }
+
+        function bookRide(rideId) {
+            fetch('../backend/customer/book_ride.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ride_id: rideId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Ride booked successfully!', 'success');
+                    loadBookings();
+                } else {
+                    showNotification(data.error || 'Failed to book ride', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred while booking the ride', 'error');
+            });
+        }
+
+        function loadBookings() {
+            fetch('../backend/customer/get_bookings.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const bookingsList = document.getElementById('bookingsList');
+                        if (data.bookings.length === 0) {
+                            bookingsList.innerHTML = '<p>No bookings found</p>';
+                            return;
+                        }
+
+                        bookingsList.innerHTML = data.bookings.map(booking => `
+                            <div class="booking-card">
+                                <div class="booking-info">
+                                    <p><i class="fas fa-map-marker-alt"></i> From: ${booking.pickup_location}</p>
+                                    <p><i class="fas fa-map-marker"></i> To: ${booking.dropoff_location}</p>
+                                    <p><i class="fas fa-calendar"></i> Date: ${booking.ride_date}</p>
+                                    <p><i class="fas fa-dollar-sign"></i> Fare: $${booking.fare}</p>
+                                    <p><i class="fas fa-user"></i> Driver: ${booking.driver_name}</p>
+                                    <p><i class="fas fa-info-circle"></i> Status: ${booking.status}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function logout() {
+            fetch('../backend/auth/logout.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '../login.html';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+
+    <style>
+        .search-form {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 0, 0.1);
+        }
+
+        .ride-card, .booking-card {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ride-info, .booking-info {
+            flex: 1;
+        }
+
+        .ride-info p, .booking-info p {
+            margin: 5px 0;
+            color: white;
+        }
+
+        .ride-info i, .booking-info i {
+            color: rgb(255, 255, 0);
+            margin-right: 10px;
+        }
+
+        .primary-button {
+            background-color: rgb(255, 255, 0);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-button:hover {
+            background-color: rgb(255, 255, 100);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: rgba(0, 255, 0, 0.8);
+        }
+
+        .notification.error {
+            background-color: rgba(255, 0, 0, 0.8);
+        }
+    </style>
+</body>
+</html>

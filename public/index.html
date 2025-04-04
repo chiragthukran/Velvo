@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OCEAN</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo">
+                <i class="fas fa-car"></i>
+                Velvo
+            </a>
+        </div>
+        <div class="nav-middle">
+            <a href="#" onclick="showMessage('about')">About</a>
+            <a href="#" onclick="showMessage('contact')">Contact</a>
+            <a href="https://github.com/chiragthukran/ocean" target="_blank">Github</a>
+        </div>
+        <div class="nav-right">
+            <a href="login.html" class="nav-button">Login</a>
+            <a href="signup.html" class="nav-button primary">Sign Up</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-container">
+        <h1 class="hero-title">Find Your Perfect Ride</h1>
+        <p class="hero-text">Quick, reliable, and comfortable journeys await</p>
+        
+        <!-- Search Box -->
+        <div class="search-container">
+            <div class="search-box">
+                <div class="search-input">
+                    <i class="fas fa-location-dot"></i>
+                    <input type="text" id="leaving-from" placeholder="Leaving from">
+                </div>
+                <div class="search-divider"></div>
+                <div class="search-input">
+                    <i class="fas fa-location-dot"></i>
+                    <input type="text" id="going-to" placeholder="Going to">
+                </div>
+                <div class="search-divider"></div>
+                <div class="search-input">
+                    <i class="fas fa-calendar"></i>
+                    <input type="date" id="travel-date">
+                </div>
+                <div class="search-divider"></div>
+                <div class="search-input">
+                    <i class="fas fa-user"></i>
+                    <select id="passengers">
+                        <option value="0">Passenger</option>
+                        <option value="1">1 passenger</option>
+                        <option value="2">2 passengers</option>
+                        <option value="3">3 passengers</option>
+                        <option value="4">4 passengers</option>
+                    </select>
+                </div>
+                <button class="search-button" onclick="searchRides()">
+                    Search
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="floating-btn" onclick="toggleDialog()">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <div class="dialog-box" id="dialogBox">
+        <button class="dialog-button" onclick="showMessage('about')">
+            <i class="fas fa-info-circle"></i> About Us
+        </button>
+        <button class="dialog-button" onclick="showMessage('contact')">
+            <i class="fas fa-envelope"></i> Contact
+        </button>
+    </div>
+
+    <div class="message-panel" id="messagePanel">
+        <div class="message-header">
+            <h2 id="messageTitle">Messages</h2>
+            <button class="close-button" onclick="closeMessage()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="message-content">
+            <div id="aboutContent" class="message-section">
+                <h3>About Velvo</h3>
+                <p>Velvo is a modern ride-sharing platform designed to connect drivers and passengers seamlessly. Our mission is to make transportation accessible, affordable, and efficient for everyone.</p>
+                <h4>Why Choose Velvo?</h4>
+                <ol>
+                    <li>Safe and verified drivers</li>
+                    <li>Real-time ride tracking</li>
+                    <li>Competitive pricing</li>
+                    <li>24/7 customer support</li>
+                    <li>Eco-friendly options</li>
+                </ol>
+            </div>
+            <div id="contactContent" class="message-section">
+                <h3>Contact Us</h3>
+                <p>We're here to help! Reach out to us through any of these channels:</p>
+                <div class="contact-info">
+                    <p><i class="fas fa-envelope"></i> Email:chiragrao1206@gmail.com</p>
+                    <p><i class="fas fa-phone"></i> Phone: +91 999999999</p>
+                    <p><i class="fas fa-location-dot"></i> Address: LPU, Jalandhar, 144411</p>
+                </div>
+                <div class="social-links">
+                    <a href="https://x.com/ayushrao9407?s=11" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.instagram.com/ayush_ydv02/" class="social-link"><i class="fab fa-facebook"></i></a>
+                    <a href="https://www.instagram.com/ayush_ydv02/" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.linkedin.com/in/chiragthukran/" class="social-link"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        Developed By Spartans with <span>&#10084</span>
+    </footer>
+
+    <script src="js/search.js"></script>
+</body>
+</html>

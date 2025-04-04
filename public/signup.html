@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up - Ocean</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: rgba(0, 255, 0, 0.8);
+        }
+
+        .notification.error {
+            background-color: rgba(255, 0, 0, 0.8);
+        }
+
+        .button-loader {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: black;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .auth-button {
+            position: relative;
+        }
+
+        .auth-button.loading .button-text {
+            visibility: hidden;
+        }
+
+        .auth-button.loading .button-loader {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <a href="index.html" class="logo">
+                <i class="fas fa-car"></i>
+                Ocean
+            </a>
+            <h2>Create Account</h2>
+            <p class="auth-subtitle">Join our community of riders and drivers</p>
+            
+            <form id="signupForm" class="auth-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-user-circle"></i>
+                    <input type="text" name="name" placeholder="Full Name" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-users"></i>
+                    <select name="role" id="role" required>
+                        <option value="">Select Role</option>
+                        <option value="customer">Customer</option>
+                        <option value="driver">Driver</option>
+                    </select>
+                </div>
+                
+                <div id="driverFields" class="driver-fields">
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" name="driving_license_number" placeholder="Driving License Number">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-address-card"></i>
+                        <input type="text" name="aadhar_card" placeholder="Aadhar Card">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-car"></i>
+                        <input type="text" name="car_number" placeholder="Car Number">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input type="text" name="driver_address" placeholder="Address">
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-button">
+                    <span class="button-text">Sign Up</span>
+                    <div class="button-loader"></div>
+                </button>
+            </form>
+            
+            <p class="auth-footer">
+                Already have an account? <a href="login.html">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('role').addEventListener('change', function() {
+            const driverFields = document.getElementById('driverFields');
+            if (this.value === 'driver') {
+                driverFields.style.display = 'block';
+                driverFields.querySelectorAll('input').forEach(input => input.required = true);
+            } else {
+                driverFields.style.display = 'none';
+                driverFields.querySelectorAll('input').forEach(input => input.required = false);
+            }
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = this.querySelector('button');
+            
+            try {
+                // Show loading state
+                button.classList.add('loading');
+
+                const formData = new FormData(this);
+                
+                // Debug log
+                console.log('Form data:');
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+
+                const response = await fetch('backend/auth/signup.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Debug log
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Server response:', data); // Debug log
+
+                if (data.success) {
+                    button.classList.add('success');
+                    showNotification('Sign up successful! Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                } else {
+                    showNotification(data.error || 'Sign up failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error); // Debug log
+                showNotification('An error occurred. Please try again.', 'error');
+            } finally {
+                // Reset button state if not redirecting
+                if (!button.classList.contains('success')) {
+                    button.classList.remove('loading');
+                }
+            }
+        });
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
