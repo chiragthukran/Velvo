@@ -3,454 +3,8 @@
 <head>
     <title>Driver Dashboard | Velvo</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .dashboard-container {
-            display: flex;
-            min-height: calc(100vh - 70px);
-            margin-top: 70px;
-        }
-        
-        .sidebar {
-            width: 250px;
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-right: 1px solid rgba(255, 255, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        /* Navbar customization */
-        .user-greeting {
-            color: var(--text-color);
-            margin-right: 15px;
-            font-size: 0.95rem;
-            border: 1px solid var(--primary-color);
-            border-radius:8px;
-            padding: 8px 16px;
-        }
-        
-        #driver-name {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        .nav-right .nav-button {
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .nav-right .nav-button:hover {
-            background-color: var(--primary-color);
-            color: var(--background-color);
-            transform: translateY(-2px);
-            box-shadow: 0 0 15px rgba(255, 255, 0, 0.3);
-        }
-        
-        .sidebar h3 {
-            margin-bottom: 20px;
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .sidebar-menu li {
-            margin-bottom: 10px;
-        }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: var(--text-color);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: rgba(255, 255, 0, 0.1);
-            color: var(--primary-color);
-            transform: translateX(5px);
-            box-shadow: 0 0 15px rgba(255, 255, 0, 0.1);
-        }
-        
-        .sidebar-menu i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            background-color: var(--background-color);
-            transition: all 0.3s ease;
-        }
-        
-        .dashboard-section {
-            display: none;
-            background-color: rgba(26, 26, 26, 0.7);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255, 255, 0, 0.1);
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 0, 0.1);
-            animation: fadeIn 0.5s ease;
-            transform: translateY(20px);
-            opacity: 0;
-            transition: transform 0.4s ease, opacity 0.4s ease;
-        }
-        
-        .dashboard-section.active {
-            display: block;
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--primary-color);
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 0, 0.3);
-            border-radius: 8px;
-            font-size: 16px;
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 10px rgba(255, 255, 0, 0.2);
-            outline: none;
-        }
-        
-        .btn-submit {
-            background-color: var(--primary-color);
-            color: var(--background-color);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
-        }
-        
-        .ride-card {
-            background-color: rgba(26, 26, 26, 0.8);
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 0, 0.1);
-            animation: fadeInUp 0.5s ease;
-        }
-        
-        .ride-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(255, 255, 0, 0.15);
-            border-color: rgba(255, 255, 0, 0.3);
-        }
-        
-        .ride-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-        
-        .ride-title {
-            font-weight: bold;
-            font-size: 18px;
-            color: var(--text-color);
-        }
-        
-        .ride-status {
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 50px;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-        .status-active {
-            background-color: rgba(26, 115, 232, 0.2);
-            color: #57a8ff;
-            border: 1px solid rgba(26, 115, 232, 0.5);
-        }
-        
-        .status-completed {
-            background-color: rgba(12, 166, 120, 0.2);
-            color: #0ca678;
-            border: 1px solid rgba(12, 166, 120, 0.5);
-        }
-        
-        .status-cancelled {
-            background-color: rgba(224, 49, 49, 0.2);
-            color: #ff7575;
-            border: 1px solid rgba(224, 49, 49, 0.5);
-        }
-        
-        .ride-details {
-            margin-bottom: 15px;
-        }
-        
-        .ride-details p {
-            margin: 8px 0;
-            color: #aaa;
-        }
-        
-        .rides-container {
-            max-height: 600px;
-            overflow-y: auto;
-            padding-right: 10px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 0, 0.5) rgba(0, 0, 0, 0.1);
-        }
-        
-        .rides-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .rides-container::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        
-        .rides-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 0, 0.3);
-            border-radius: 10px;
-        }
-        
-        .rides-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 0, 0.5);
-        }
-        
-        .ride-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        
-        .ride-action-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-complete {
-            background-color: rgba(12, 166, 120, 0.2);
-            color: #0ca678;
-            border: 1px solid rgba(12, 166, 120, 0.3);
-        }
-        
-        .btn-complete:hover {
-            background-color: #0ca678;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 0 10px rgba(12, 166, 120, 0.4);
-        }
-        
-        .btn-cancel {
-            background-color: rgba(224, 49, 49, 0.2);
-            color: #ff7575;
-            border: 1px solid rgba(224, 49, 49, 0.3);
-        }
-        
-        .btn-cancel:hover {
-            background-color: #e03131;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 0 10px rgba(224, 49, 49, 0.4);
-        }
-        
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .notification {
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            transform: translateX(100%);
-            opacity: 0;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
-            max-width: 350px;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        
-        .notification.success {
-            border-left: 4px solid var(--primary-color);
-        }
-        
-        .notification.error {
-            border-left: 4px solid #e03131;
-        }
-        
-        .notification.info {
-            border-left: 4px solid #1a73e8;
-        }
-        
-        /* Request approval section */
-        .request-container {
-            margin-top: 20px;
-        }
-        
-        .no-requests, .no-rides {
-            text-align: center;
-            padding: 30px;
-            color: #777;
-            font-style: italic;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            border: 1px dashed rgba(255, 255, 0, 0.2);
-        }
-
-        /* Form layout for publish ride */
-        .form-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 15px;
-        }
-        
-        .form-col {
-            flex: 1;
-        }
-        
-        /* Stats cards */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background-color: rgba(26, 26, 26, 0.7);
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 0, 0.1);
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.5s ease;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-color);
-            box-shadow: 0 5px 20px rgba(255, 255, 0, 0.15);
-        }
-        
-        .stat-card h3 {
-            color: var(--primary-color);
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-        }
-        
-        .stat-card p {
-            color: var(--text-color);
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        
-        /* Profile section */
-        .profile-details {
-            background-color: rgba(26, 26, 26, 0.7);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 0, 0.1);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .profile-details p {
-            background-color: rgba(0, 0, 0, 0.3);
-            padding: 12px 15px;
-            border-radius: 8px;
-            color: #eee;
-        }
-        
-        /* Additional animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 0, 0.2);
-            }
-            
-            .form-row {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -475,7 +29,7 @@
     <div class="dashboard-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <h3>Driver Dashboard</h3>
+            <h3>Welcome Driver</h3>
             <ul class="sidebar-menu">
                 <li><a href="#" class="active" onclick="showDashboardSection('dashboard-overview')"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
                 <li><a href="#" onclick="showDashboardSection('publish-ride')"><i class="fas fa-plus-circle"></i> Publish Ride</a></li>
@@ -515,13 +69,13 @@
                         <div class="form-col">
                             <div class="form-group">
                                 <label for="pickup-location">Pickup Location</label>
-                                <input type="text" id="pickup-location" class="form-control" required>
+                                <input style="background-color:black;" type="text" id="pickup-location" class="form-control" required>
                             </div>
                         </div>
                         <div class="form-col">
                             <div class="form-group">
                                 <label for="dropoff-location">Dropoff Location</label>
-                                <input type="text" id="dropoff-location" class="form-control" required>
+                                <input style="background-color:black;" type="text" id="dropoff-location" class="form-control" required>
                             </div>
                         </div>
                     </div>
@@ -536,7 +90,7 @@
                         <div class="form-col">
                             <div class="form-group">
                                 <label for="departure-time">Departure Time</label>
-                                <input type="time" id="departure-time" class="form-control" required>
+                                <input style="width:150px" type="time" id="departure-time" class="form-control">
                             </div>
                         </div>
                     </div>
@@ -555,8 +109,8 @@
                         </div>
                         <div class="form-col">
                             <div class="form-group">
-                                <label for="fare">Fare (₹)</label>
-                                <input type="number" id="fare" class="form-control" min="1" required>
+                                <label for="fare">Fare &#8377;</label>
+                                <input style="background-color:black;"  type="number" id="fare" class="form-control" min="1" required>
                             </div>
                         </div>
                     </div>
@@ -865,7 +419,7 @@
                 <div class="ride-details">
                     <p><i class="fas fa-calendar"></i> ${formattedDate} at ${ride.departure_time}</p>
                     <p><i class="fas fa-chair"></i> ${ride.available_seats}/${ride.total_seats} seats available</p>
-                    <p><i class="fas fa-rupee-sign"></i> ₹${ride.fare} per seat</p>
+                    <p><i class="fas fa-rupee-sign"></i> &#8377;${ride.fare} per seat</p>
                 </div>
             `;
             

@@ -303,7 +303,7 @@ function createRideCard(ride) {
         <div class="ride-details">
             <p><i class="fas fa-calendar"></i> ${formattedDate} at ${ride.departure_time}</p>
             <p><i class="fas fa-chair"></i> ${ride.available_seats} seats available</p>
-            <p><i class="fas fa-rupee-sign"></i> ₹${ride.fare} per seat</p>
+            <p>&#8377;${ride.fare} per seat</p>
             <p><i class="fas fa-user"></i> Driver: ${ride.driver_name}</p>
         </div>
         <div class="ride-actions">
