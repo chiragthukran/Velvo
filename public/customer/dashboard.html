@@ -1,105 +1,553 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Customer Dashboard - Ocean</title>
+    <title>Customer Dashboard | Velvo</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .sidebar h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: #e0e0e0;
+            color: #1a73e8;
+        }
+        
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        
+        .dashboard-section {
+            display: none;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .btn-submit {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background-color: #1558b6;
+        }
+        
+        .ride-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .ride-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .ride-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .ride-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .ride-status {
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .status-active, .status-approved {
+            background-color: #e6f7ff;
+            color: #1a73e8;
+        }
+        
+        .status-completed {
+            background-color: #e6fff0;
+            color: #0ca678;
+        }
+        
+        .status-cancelled, .status-rejected {
+            background-color: #fff0f0;
+            color: #e03131;
+        }
+        
+        .status-pending {
+            background-color: #fff9e6;
+            color: #f59f00;
+        }
+        
+        .ride-details {
+            margin-bottom: 10px;
+        }
+        
+        .ride-details p {
+            margin: 5px 0;
+            color: #555;
+        }
+        
+        .rides-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .ride-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .ride-action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-book {
+            background-color: #e6f7ff;
+            color: #1a73e8;
+        }
+        
+        .btn-book:hover {
+            background-color: #1a73e8;
+            color: white;
+        }
+        
+        .btn-cancel {
+            background-color: #fff0f0;
+            color: #e03131;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #e03131;
+            color: white;
+        }
+        
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .notification.success {
+            border-left: 4px solid #0ca678;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #e03131;
+        }
+        
+        .notification.info {
+            border-left: 4px solid #1a73e8;
+        }
+        
+        .search-results {
+            margin-top: 20px;
+        }
+        
+        /* Dialog for booking seats */
+        .booking-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+        
+        .booking-dialog.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .booking-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .booking-dialog.show .booking-form {
+            transform: translateY(0);
+        }
+        
+        .booking-form h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .booking-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-cancel-booking {
+            background-color: #f1f3f5;
+            color: #495057;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-confirm-booking {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Search form */
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .search-form .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 0;
+        }
+        
+        .search-form .btn-submit {
+            align-self: flex-end;
+        }
+        
+        /* Stats cards */
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 16px;
+        }
+        
+        .stat-card p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+    </style>
 </head>
 <body>
-    <div class="navbar">
+    <!-- Navbar -->
+    <nav class="navbar">
         <div class="nav-left">
             <a href="../index.html" class="logo">
                 <i class="fas fa-car"></i>
-                Ocean
+                Velvo
             </a>
         </div>
         <div class="nav-middle">
-            <a href="dashboard.html" class="active">Dashboard</a>
-            <a href="rides.html">My Rides</a>
-            <a href="bookings.html">Book a Ride</a>
+            <a href="../index.html#" onclick="showMessage('about')">About</a>
+            <a href="../index.html#" onclick="showMessage('contact')">Contact</a>
+            <a href="https://github.com/chiragthukran/ocean" target="_blank">Github</a>
         </div>
         <div class="nav-right">
-            <span id="userNameDisplay" class="nav-button"></span>
+            <span class="user-greeting">Welcome, <span id="customer-name">Customer</span>!</span>
             <a href="#" onclick="logout()" class="nav-button">Logout</a>
         </div>
-    </div>
+    </nav>
 
-    <div class="dashboard-container" style="margin-top: 100px; padding: 20px;">
-        <h2>Welcome to Your Dashboard</h2>
-        <div id="dashboardContent">
-            <div class="stats-container">
-                <div class="stat-card">
-                    <i class="fas fa-car"></i>
-                    <h3>Total Rides</h3>
-                    <p id="totalRides">Loading...</p>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>Customer Dashboard</h3>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" onclick="showDashboardSection('dashboard-overview')"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+                <li><a href="#" onclick="showDashboardSection('find-rides')"><i class="fas fa-search"></i> Find Rides</a></li>
+                <li><a href="#" onclick="showDashboardSection('active-bookings', true)"><i class="fas fa-bookmark"></i> My Bookings</a></li>
+                <li><a href="#" onclick="showDashboardSection('booking-history', true)"><i class="fas fa-history"></i> Booking History</a></li>
+                <li><a href="#" onclick="showDashboardSection('profile')"><i class="fas fa-user"></i> Profile</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Overview Section -->
+            <div id="dashboard-overview" class="dashboard-section active">
+                <h2>Dashboard Overview</h2>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h3>Active Bookings</h3>
+                        <p id="active-bookings-count">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completed Rides</h3>
+                        <p id="completed-rides-count">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Requests</h3>
+                        <p id="pending-requests-count">0</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-clock"></i>
-                    <h3>Upcoming Rides</h3>
-                    <p id="upcomingRides">Loading...</p>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-history"></i>
-                    <h3>Completed Rides</h3>
-                    <p id="completedRides">Loading...</p>
+                
+                <h3>Recent Activity</h3>
+                <div id="recent-activity-container" class="rides-container">
+                    <!-- Recent activity will be loaded here -->
                 </div>
             </div>
             
-            <div class="recent-activity">
-                <h3>Recent Activity</h3>
-                <div id="recentActivity">Loading...</div>
+            <!-- Find Rides Section -->
+            <div id="find-rides" class="dashboard-section">
+                <h2>Find Available Rides</h2>
+                <div class="search-form">
+                    <div class="form-group">
+                        <label for="pickup-location">Pickup Location</label>
+                        <input type="text" id="pickup-location" class="form-control" placeholder="Enter pickup location">
+                    </div>
+                    <div class="form-group">
+                        <label for="dropoff-location">Dropoff Location</label>
+                        <input type="text" id="dropoff-location" class="form-control" placeholder="Enter destination">
+                    </div>
+                    <div class="form-group">
+                        <label for="travel-date">Travel Date</label>
+                        <input type="date" id="travel-date" class="form-control">
+                    </div>
+                    <button type="button" class="btn-submit" onclick="searchRides()">Search</button>
+                </div>
+                
+                <div class="search-results">
+                    <div id="search-results-container" class="rides-container">
+                        <!-- Search results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Bookings Section -->
+            <div id="active-bookings" class="dashboard-section">
+                <h2>My Active Bookings</h2>
+                <div id="active-bookings-container" class="rides-container">
+                    <!-- Active bookings will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Booking History Section -->
+            <div id="booking-history" class="dashboard-section">
+                <h2>Booking History</h2>
+                <div id="booking-history-container" class="rides-container">
+                    <!-- Booking history will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Profile Section -->
+            <div id="profile" class="dashboard-section">
+                <h2>My Profile</h2>
+                <div class="profile-details">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <p id="profile-name">Loading...</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <p id="profile-email">Loading...</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <p id="profile-username">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Booking Dialog -->
+    <div class="booking-dialog" id="booking-dialog">
+        <div class="booking-form">
+            <h3>Book a Ride</h3>
+            <div class="form-group">
+                <label for="booking-seats">Number of Seats</label>
+                <select id="booking-seats" class="form-control">
+                    <option value="1">1 seat</option>
+                    <option value="2">2 seats</option>
+                    <option value="3">3 seats</option>
+                    <option value="4">4 seats</option>
+                </select>
+            </div>
+            <input type="hidden" id="booking-ride-id">
+            <div class="booking-form-actions">
+                <button class="btn-cancel-booking" onclick="closeBookingDialog()">Cancel</button>
+                <button class="btn-confirm-booking" onclick="confirmBooking()">Book Now</button>
             </div>
         </div>
     </div>
 
+    <div class="notification-container" id="notification-container"></div>
+
     <script>
-        // Check session and redirect if not logged in
-        fetch('../backend/auth/check_session.php?role=customer')
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    window.location.href = data.redirect;
-                    return;
-                }
-                document.getElementById('userNameDisplay').textContent = data.user.name;
-                loadDashboardData();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                window.location.href = '../login.html';
-            });
+        // Check session on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSession();
+            
+            // Set default date to today
+            document.getElementById('travel-date').valueAsDate = new Date();
+        });
 
-        function loadDashboardData() {
-            // Load dashboard statistics
-            fetch('../backend/customer/get_stats.php')
+        // Session management
+        function checkSession() {
+            fetch('../backend/auth/check_session.php')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        document.getElementById('totalRides').textContent = data.stats.total;
-                        document.getElementById('upcomingRides').textContent = data.stats.upcoming;
-                        document.getElementById('completedRides').textContent = data.stats.completed;
+                    if (!data.success || data.user.role != 'customer') {
+                        window.location.href = '../login.html';
+                        //console.log(data);
+                        
+                    } else {
+                        // Set user name
+                        document.getElementById('customer-name').textContent = data.user.name;
+                        // Load initial data
+                        loadActiveBookings();
+                        loadBookingHistory();
+                        loadRecentActivity();
+                        loadCustomerProfile(data.user.id);
+                        updateDashboardCounts();
                     }
                 })
-                .catch(error => console.error('Error:', error));
-
-            // Load recent activity
-            fetch('../backend/customer/get_recent_activity.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const activityHtml = data.activities.map(activity => `
-                            <div class="activity-item">
-                                <i class="fas ${activity.icon}"></i>
-                                <div class="activity-details">
-                                    <p>${activity.description}</p>
-                                    <small>${activity.time}</small>
-                                </div>
-                            </div>
-                        `).join('');
-                        document.getElementById('recentActivity').innerHTML = activityHtml;
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error checking session:', error);
+                    window.location.href = '../login.html';
+                });
         }
 
         function logout() {
@@ -110,85 +558,391 @@
                         window.location.href = '../login.html';
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error logging out:', error);
+                });
+        }
+
+        // Show/hide dashboard sections
+        function showDashboardSection(sectionId, reload = false) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show the selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update sidebar menu
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            document.querySelector(`.sidebar-menu a[onclick*="${sectionId}"]`).classList.add('active');
+            
+            // Reload data if needed
+            if (reload) {
+                if (sectionId === 'active-bookings') loadActiveBookings();
+                if (sectionId === 'booking-history') loadBookingHistory();
+            }
+        }
+
+        // Load active bookings
+        function loadActiveBookings() {
+            fetch('../backend/customer/get_active_bookings.php')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('active-bookings-container');
+                container.innerHTML = '';
+                
+                if (data.success && data.bookings.length > 0) {
+                    data.bookings.forEach(booking => {
+                        container.appendChild(createBookingCard(booking, true));
+                    });
+                } else {
+                    container.innerHTML = '<div class="no-bookings">No active bookings found.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading active bookings:', error);
+                document.getElementById('active-bookings-container').innerHTML = 
+                    '<div class="no-bookings">Error loading bookings. Please try again.</div>';
+            });
+        }
+
+        // Load booking history
+        function loadBookingHistory() {
+            fetch('../backend/customer/get_booking_history.php')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('booking-history-container');
+                container.innerHTML = '';
+                
+                if (data.success && data.bookings.length > 0) {
+                    data.bookings.forEach(booking => {
+                        container.appendChild(createBookingCard(booking, false));
+                    });
+                } else {
+                    container.innerHTML = '<div class="no-bookings">No booking history found.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading booking history:', error);
+                document.getElementById('booking-history-container').innerHTML = 
+                    '<div class="no-bookings">Error loading history. Please try again.</div>';
+            });
+        }
+
+        // Load recent activity
+        function loadRecentActivity() {
+            fetch('../backend/customer/get_recent_activity.php')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('recent-activity-container');
+                container.innerHTML = '';
+                
+                if (data.success && data.activities.length > 0) {
+                    data.activities.forEach(activity => {
+                        container.appendChild(createActivityCard(activity));
+                    });
+                } else {
+                    container.innerHTML = '<div class="no-activity">No recent activity found.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recent-activity-container').innerHTML = 
+                    '<div class="no-activity">Error loading activity. Please try again.</div>';
+            });
+        }
+
+        // Load customer profile
+        function loadCustomerProfile(userId) {
+            fetch(`../backend/customer/get_customer_profile.php?user_id=${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('profile-name').textContent = data.profile.name;
+                    document.getElementById('profile-email').textContent = data.profile.email;
+                    document.getElementById('profile-username').textContent = data.profile.username;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading profile:', error);
+            });
+        }
+
+        // Update dashboard counts
+        function updateDashboardCounts() {
+            fetch('../backend/customer/get_dashboard_counts.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('active-bookings-count').textContent = data.counts.active_bookings;
+                    document.getElementById('completed-rides-count').textContent = data.counts.completed_rides;
+                    document.getElementById('pending-requests-count').textContent = data.counts.pending_requests;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating dashboard counts:', error);
+            });
+        }
+
+        // Search for rides
+        function searchRides() {
+            const pickup = document.getElementById('pickup-location').value;
+            const dropoff = document.getElementById('dropoff-location').value;
+            const date = document.getElementById('travel-date').value;
+            
+            if (!pickup || !dropoff || !date) {
+                showNotification('Please fill all search fields', 'error');
+                return;
+            }
+            
+            const container = document.getElementById('search-results-container');
+            container.innerHTML = '<div class="loading">Searching for rides...</div>';
+            
+            fetch(`../backend/customer/search_rides.php?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}&date=${encodeURIComponent(date)}`)
+            .then(response => response.json())
+            .then(data => {
+                container.innerHTML = '';
+                
+                if (data.success && data.rides.length > 0) {
+                    data.rides.forEach(ride => {
+                        container.appendChild(createRideSearchCard(ride));
+                    });
+                } else {
+                    container.innerHTML = '<div class="no-rides">No rides found matching your criteria.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching rides:', error);
+                container.innerHTML = '<div class="no-rides">Error searching rides. Please try again.</div>';
+            });
+        }
+
+        // Create a ride search result card
+        function createRideSearchCard(ride) {
+            const card = document.createElement('div');
+            card.className = 'ride-card';
+            
+            const rideDate = new Date(ride.ride_date);
+            const formattedDate = rideDate.toLocaleDateString('en-US', { 
+                weekday: 'short',
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric'
+            });
+            
+            card.innerHTML = `
+                <div class="ride-header">
+                    <div class="ride-title">${ride.pickup_location} to ${ride.dropoff_location}</div>
+                    <div class="ride-status status-active">Available</div>
+                </div>
+                <div class="ride-details">
+                    <p><i class="fas fa-calendar"></i> ${formattedDate} at ${ride.departure_time}</p>
+                    <p><i class="fas fa-chair"></i> ${ride.available_seats} seats available</p>
+                    <p><i class="fas fa-rupee-sign"></i> ₹${ride.fare} per seat</p>
+                    <p><i class="fas fa-user"></i> Driver: ${ride.driver_name}</p>
+                </div>
+                <div class="ride-actions">
+                    <button class="ride-action-btn btn-book" onclick="openBookingDialog(${ride.ride_id}, ${ride.available_seats})">
+                        Book Seat
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Create an activity card
+        function createActivityCard(activity) {
+            const card = document.createElement('div');
+            card.className = 'ride-card';
+            
+            let statusClass = 'status-active';
+            if (activity.status === 'completed') statusClass = 'status-completed';
+            if (activity.status === 'cancelled' || activity.status === 'rejected') statusClass = 'status-cancelled';
+            if (activity.status === 'pending') statusClass = 'status-pending';
+            
+            const activityDate = new Date(activity.date);
+            const formattedDate = activityDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric'
+            });
+            
+            card.innerHTML = `
+                <div class="ride-header">
+                    <div class="ride-title">${activity.message}</div>
+                    <div class="ride-status ${statusClass}">${activity.status}</div>
+                </div>
+                <div class="ride-details">
+                    <p><i class="fas fa-calendar"></i> ${formattedDate}</p>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Create a booking card
+        function createBookingCard(booking, isActive) {
+            const card = document.createElement('div');
+            card.className = 'ride-card';
+            
+            let statusClass = 'status-active';
+            if (booking.booking_status === 'completed') statusClass = 'status-completed';
+            if (booking.booking_status === 'cancelled' || booking.booking_status === 'rejected') statusClass = 'status-cancelled';
+            if (booking.booking_status === 'pending') statusClass = 'status-pending';
+            if (booking.booking_status === 'approved') statusClass = 'status-approved';
+            
+            const rideDate = new Date(booking.ride_date);
+            const formattedDate = rideDate.toLocaleDateString('en-US', { 
+                weekday: 'short',
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric'
+            });
+            
+            card.innerHTML = `
+                <div class="ride-header">
+                    <div class="ride-title">${booking.pickup_location} to ${booking.dropoff_location}</div>
+                    <div class="ride-status ${statusClass}">${booking.booking_status}</div>
+                </div>
+                <div class="ride-details">
+                    <p><i class="fas fa-calendar"></i> ${formattedDate} at ${booking.departure_time}</p>
+                    <p><i class="fas fa-chair"></i> ${booking.seats_booked} seat(s) booked</p>
+                    <p><i class="fas fa-rupee-sign"></i> ₹${booking.fare * booking.seats_booked} (₹${booking.fare} per seat)</p>
+                    <p><i class="fas fa-user"></i> Driver: ${booking.driver_name}</p>
+                </div>
+            `;
+            
+            if (isActive && (booking.booking_status === 'pending' || booking.booking_status === 'approved')) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'ride-actions';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'ride-action-btn btn-cancel';
+                cancelBtn.textContent = 'Cancel Booking';
+                cancelBtn.onclick = function() {
+                    cancelBooking(booking.booking_id);
+                };
+                
+                actionsDiv.appendChild(cancelBtn);
+                card.appendChild(actionsDiv);
+            }
+            
+            return card;
+        }
+
+        // Open booking dialog
+        function openBookingDialog(rideId, availableSeats) {
+            document.getElementById('booking-ride-id').value = rideId;
+            
+            // Limit available seats in dropdown
+            const seatsSelect = document.getElementById('booking-seats');
+            seatsSelect.innerHTML = '';
+            
+            for (let i = 1; i <= Math.min(availableSeats, 4); i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i === 1 ? '1 seat' : `${i} seats`;
+                seatsSelect.appendChild(option);
+            }
+            
+            document.getElementById('booking-dialog').classList.add('show');
+        }
+
+        // Close booking dialog
+        function closeBookingDialog() {
+            document.getElementById('booking-dialog').classList.remove('show');
+        }
+
+        // Confirm booking
+        function confirmBooking() {
+            const rideId = document.getElementById('booking-ride-id').value;
+            const seats = document.getElementById('booking-seats').value;
+            
+            const formData = new FormData();
+            formData.append('ride_id', rideId);
+            formData.append('seats', seats);
+            
+            fetch('../backend/customer/book_ride.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Booking request sent successfully!', 'success');
+                    closeBookingDialog();
+                    
+                    // Refresh data
+                    searchRides();
+                    loadActiveBookings();
+                    loadRecentActivity();
+                    updateDashboardCounts();
+                } else {
+                    showNotification(data.error || 'Failed to book ride', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error booking ride:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        // Cancel booking
+        function cancelBooking(bookingId) {
+            if (!confirm('Are you sure you want to cancel this booking?')) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('booking_id', bookingId);
+            
+            fetch('../backend/customer/cancel_booking.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Booking cancelled successfully!', 'success');
+                    
+                    // Refresh data
+                    loadActiveBookings();
+                    loadBookingHistory();
+                    loadRecentActivity();
+                    updateDashboardCounts();
+                } else {
+                    showNotification(data.error || 'Failed to cancel booking', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error cancelling booking:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // Show notification with animation
+            setTimeout(() => notification.classList.add('show'), 10);
+            
+            // Automatically remove notification after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
         }
     </script>
-
-    <style>
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 20px rgba(255, 255, 0, 0.2);
-        }
-
-        .stat-card i {
-            font-size: 2rem;
-            color: rgb(255, 255, 0);
-            margin-bottom: 10px;
-        }
-
-        .stat-card h3 {
-            color: white;
-            margin: 10px 0;
-        }
-
-        .stat-card p {
-            font-size: 1.5rem;
-            color: rgb(255, 255, 0);
-            margin: 0;
-        }
-
-        .recent-activity {
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 0, 0.1);
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 0, 0.1);
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-item i {
-            color: rgb(255, 255, 0);
-            font-size: 1.2rem;
-        }
-
-        .activity-details p {
-            margin: 0;
-            color: white;
-        }
-
-        .activity-details small {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .nav-button.active {
-            color: rgb(255, 255, 0);
-        }
-    </style>
 </body>
 </html>

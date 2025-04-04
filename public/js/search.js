@@ -112,7 +112,66 @@ document.querySelectorAll('.search-input input, .search-input select').forEach(i
 });
 
 // Set default date to today
-document.getElementById('travel-date').valueAsDate = new Date();
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('travel-date')) {
+        document.getElementById('travel-date').valueAsDate = new Date();
+    }
+    
+    // Check if user is already logged in
+    checkLoginStatus();
+});
+
+// Check login status
+function checkLoginStatus() {
+    fetch('backend/auth/check_session.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update nav based on role
+                const navRight = document.querySelector('.nav-right');
+                navRight.innerHTML = '';
+                
+                const greeting = document.createElement('span');
+                greeting.className = 'user-greeting';
+                greeting.textContent = `Welcome, ${data.user.name}!`;
+                
+                const dashboardLink = document.createElement('a');
+                dashboardLink.href = data.user.role === 'driver' ? 'driver/dashboard.html' : 'customer/dashboard.html';
+                dashboardLink.className = 'nav-button primary';
+                dashboardLink.textContent = 'Dashboard';
+                
+                const logoutLink = document.createElement('a');
+                logoutLink.href = '#';
+                logoutLink.className = 'nav-button';
+                logoutLink.textContent = 'Logout';
+                logoutLink.onclick = function() {
+                    logout();
+                    return false;
+                };
+                
+                navRight.appendChild(greeting);
+                navRight.appendChild(dashboardLink);
+                navRight.appendChild(logoutLink);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking login status:', error);
+        });
+}
+
+// Logout function
+function logout() {
+    fetch('backend/auth/logout.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error logging out:', error);
+        });
+}
 
 // Search functionality
 function searchRides() {
@@ -133,32 +192,211 @@ function searchRides() {
 
     // Create search parameters
     const searchParams = new URLSearchParams({
-        from: leavingFrom,
-        to: goingTo,
+        pickup: leavingFrom,
+        dropoff: goingTo,
         date: travelDate,
         passengers: passengers
     });
 
-    // Redirect to search results page
-    setTimeout(() => {
-        window.location.href = `/customer/search-results.html?${searchParams.toString()}`;
-    }, 800);
+    // Check if the search results container already exists
+    let searchResultsContainer = document.getElementById('search-results-container');
+    
+    if (!searchResultsContainer) {
+        // Create search results container
+        searchResultsContainer = document.createElement('div');
+        searchResultsContainer.id = 'search-results-container';
+        searchResultsContainer.className = 'search-results-container';
+        
+        // Add it after the hero container
+        const heroContainer = document.querySelector('.hero-container');
+        heroContainer.parentNode.insertBefore(searchResultsContainer, heroContainer.nextSibling);
+    }
+    
+    // Show loading
+    searchResultsContainer.innerHTML = '<div class="loading">Searching for rides...</div>';
+    
+    // Fetch search results
+    fetch(`backend/public/search_rides.php?${searchParams.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            // Reset search button
+            searchButton.classList.remove('loading');
+            searchButton.innerHTML = 'Search';
+            
+            // Clear the container
+            searchResultsContainer.innerHTML = '';
+            
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'search-results-header';
+            header.innerHTML = `<h2>Available Rides from ${leavingFrom} to ${goingTo}</h2>`;
+            searchResultsContainer.appendChild(header);
+            
+            if (data.success && data.rides.length > 0) {
+                // Create results list
+                const resultsList = document.createElement('div');
+                resultsList.className = 'search-results-list';
+                
+                data.rides.forEach(ride => {
+                    const rideCard = createRideCard(ride);
+                    resultsList.appendChild(rideCard);
+                });
+                
+                searchResultsContainer.appendChild(resultsList);
+                
+                // Scroll to results
+                searchResultsContainer.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Show no results message
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.innerHTML = `
+                    <div class="no-results-icon"><i class="fas fa-search"></i></div>
+                    <h3>No Rides Found</h3>
+                    <p>We couldn't find any rides matching your search criteria. Try different locations or dates.</p>
+                `;
+                searchResultsContainer.appendChild(noResults);
+                
+                // Scroll to results
+                searchResultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+        })
+        .catch(error => {
+            console.error('Error searching for rides:', error);
+            
+            // Reset search button
+            searchButton.classList.remove('loading');
+            searchButton.innerHTML = 'Search';
+            
+            // Show error message
+            searchResultsContainer.innerHTML = `
+                <div class="search-error">
+                    <div class="search-error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h3>Error</h3>
+                    <p>There was an error processing your search. Please try again.</p>
+                </div>
+            `;
+            
+            // Scroll to results
+            searchResultsContainer.scrollIntoView({ behavior: 'smooth' });
+        });
+}
+
+// Create a ride card for search results
+function createRideCard(ride) {
+    const card = document.createElement('div');
+    card.className = 'ride-card';
+    
+    const rideDate = new Date(ride.ride_date);
+    const formattedDate = rideDate.toLocaleDateString('en-US', { 
+        weekday: 'short',
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric'
+    });
+    
+    card.innerHTML = `
+        <div class="ride-header">
+            <div class="ride-title">${ride.pickup_location} to ${ride.dropoff_location}</div>
+            <div class="ride-status">Available</div>
+        </div>
+        <div class="ride-details">
+            <p><i class="fas fa-calendar"></i> ${formattedDate} at ${ride.departure_time}</p>
+            <p><i class="fas fa-chair"></i> ${ride.available_seats} seats available</p>
+            <p><i class="fas fa-rupee-sign"></i> ₹${ride.fare} per seat</p>
+            <p><i class="fas fa-user"></i> Driver: ${ride.driver_name}</p>
+        </div>
+        <div class="ride-actions">
+            <button class="ride-action-btn btn-book" onclick="handleBookingClick(${ride.ride_id})">
+                Book Seat
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+
+// Handle booking click
+function handleBookingClick(rideId) {
+    // Check if user is logged in
+    fetch('backend/auth/check_session.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.user.role === 'customer') {
+                    // Redirect to customer dashboard with ride ID
+                    window.location.href = `customer/dashboard.html?ride_id=${rideId}`;
+                } else {
+                    showNotification('Only customers can book rides. Please login with a customer account.', 'error');
+                }
+            } else {
+                // Redirect to login page
+                showLoginPrompt(rideId);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking login status:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+        });
+}
+
+// Show login prompt
+function showLoginPrompt(rideId) {
+    // Create and display a prompt
+    const promptOverlay = document.createElement('div');
+    promptOverlay.className = 'prompt-overlay';
+    
+    promptOverlay.innerHTML = `
+        <div class="login-prompt">
+            <h3>Login Required</h3>
+            <p>You need to login or create an account to book a ride.</p>
+            <div class="prompt-actions">
+                <a href="login.html?redirect=ride&id=${rideId}" class="btn-login">Login</a>
+                <a href="signup.html?redirect=ride&id=${rideId}" class="btn-signup">Sign Up</a>
+                <button class="btn-cancel" onclick="closeLoginPrompt()">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(promptOverlay);
+    
+    // Prevent body scrolling
+    document.body.style.overflow = 'hidden';
+}
+
+// Close login prompt
+function closeLoginPrompt() {
+    const promptOverlay = document.querySelector('.prompt-overlay');
+    if (promptOverlay) {
+        promptOverlay.remove();
+        
+        // Restore body scrolling
+        document.body.style.overflow = '';
+    }
 }
 
 // Notification system
 function showNotification(message, type = 'info') {
+    let notificationContainer = document.querySelector('.notification-container');
+    
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.className = 'notification-container';
+        document.body.appendChild(notificationContainer);
+    }
+    
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.innerHTML = message;
     
-    document.body.appendChild(notification);
+    notificationContainer.appendChild(notification);
     
     setTimeout(() => notification.classList.add('show'), 100);
     
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    }, 5000);
 }
 
 // Add location suggestions

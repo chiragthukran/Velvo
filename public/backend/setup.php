@@ -15,6 +15,7 @@ $conn->select_db('ridesharing_db');
 
 // Drop existing tables in the correct order
 $conn->query("SET FOREIGN_KEY_CHECKS = 0");
+$conn->query("DROP TABLE IF EXISTS Bookings");
 $conn->query("DROP TABLE IF EXISTS Rides");
 $conn->query("DROP TABLE IF EXISTS DriverDetails");
 $conn->query("DROP TABLE IF EXISTS Users");
@@ -55,15 +56,18 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating DriverDetails table: " . $conn->error . "\n";
 }
 
-// Create Rides table
+// Create Rides table - for published rides by drivers
 $sql = "CREATE TABLE IF NOT EXISTS Rides (
     ride_id INT AUTO_INCREMENT PRIMARY KEY,
     driver_id INT NOT NULL,
     pickup_location VARCHAR(255) NOT NULL,
     dropoff_location VARCHAR(255) NOT NULL,
-    ride_date DATETIME NOT NULL,
-    status ENUM('pending', 'accepted', 'completed', 'cancelled') DEFAULT 'pending',
+    ride_date DATE NOT NULL,
+    departure_time TIME NOT NULL,
+    total_seats INT NOT NULL DEFAULT 4,
+    available_seats INT NOT NULL DEFAULT 4,
     fare DECIMAL(10,2) NOT NULL,
+    status ENUM('active', 'completed', 'cancelled') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (driver_id) REFERENCES Users(user_id) ON DELETE CASCADE
 )";
@@ -72,6 +76,24 @@ if ($conn->query($sql) === TRUE) {
     echo "Rides table created successfully\n";
 } else {
     echo "Error creating Rides table: " . $conn->error . "\n";
+}
+
+// Create Bookings table - for customer bookings
+$sql = "CREATE TABLE IF NOT EXISTS Bookings (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    ride_id INT NOT NULL,
+    customer_id INT NOT NULL,
+    seats_booked INT NOT NULL DEFAULT 1,
+    booking_status ENUM('pending', 'approved', 'rejected', 'cancelled', 'completed') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ride_id) REFERENCES Rides(ride_id) ON DELETE CASCADE,
+    FOREIGN KEY (customer_id) REFERENCES Users(user_id) ON DELETE CASCADE
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Bookings table created successfully\n";
+} else {
+    echo "Error creating Bookings table: " . $conn->error . "\n";
 }
 
 $conn->close();

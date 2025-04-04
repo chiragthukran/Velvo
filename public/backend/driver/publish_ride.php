@@ -1,59 +1,65 @@
 <?php
-session_start();
-include '../../backend/config.php';
+require_once '../config.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['user_id']) && $_SESSION['role'] == 'driver') {
-    try {
-        // Get and sanitize inputs
-        $driver_id = $_SESSION['user_id'];
-        $pickup_location = sanitizeInput($_POST['start_location']);
-        $dropoff_location = sanitizeInput($_POST['end_location']);
-        $ride_date = sanitizeInput($_POST['start_time']);
-        $fare = floatval($_POST['price']);
-        $status = 'pending';
+// Check if user is logged in as a driver
+checkRole(['driver']);
 
-        // Validate inputs
-        if (empty($pickup_location) || empty($dropoff_location)) {
-            throw new Exception('Start and end locations are required');
-        }
+// Get the driver ID
+$driverId = $_SESSION['user_id'];
 
-        if ($fare <= 0) {
-            throw new Exception('Fare must be greater than 0');
-        }
+// Get ride details from POST
+$pickupLocation = sanitizeInput($_POST['pickup_location'] ?? '');
+$dropoffLocation = sanitizeInput($_POST['dropoff_location'] ?? '');
+$rideDate = sanitizeInput($_POST['ride_date'] ?? '');
+$departureTime = sanitizeInput($_POST['departure_time'] ?? '');
+$totalSeats = intval($_POST['total_seats'] ?? 4);
+$availableSeats = intval($_POST['available_seats'] ?? 4);
+$fare = floatval($_POST['fare'] ?? 0);
 
-        if (empty($ride_date)) {
-            throw new Exception('Ride date is required');
-        }
-
-        // Insert the ride
-        $stmt = $conn->prepare("INSERT INTO Rides (driver_id, pickup_location, dropoff_location, ride_date, status, fare) VALUES (?, ?, ?, ?, ?, ?)");
-        if (!$stmt) {
-            throw new Exception('Failed to prepare ride insert statement: ' . $conn->error);
-        }
-        
-        $stmt->bind_param("issssd", $driver_id, $pickup_location, $dropoff_location, $ride_date, $status, $fare);
-        
-        if (!$stmt->execute()) {
-            throw new Exception('Failed to publish ride: ' . $stmt->error);
-        }
-        
-        echo json_encode([
-            'success' => true,
-            'message' => 'Ride published successfully'
-        ]);
-        
-    } catch (Exception $e) {
-        echo json_encode([
-            'success' => false,
-            'error' => $e->getMessage()
-        ]);
-    }
-} else {
+// Validate inputs
+if (empty($pickupLocation) || empty($dropoffLocation) || empty($rideDate) || empty($departureTime) || $fare <= 0) {
     echo json_encode([
-        'success' => false,
-        'error' => 'Invalid request or unauthorized access'
+        "success" => false,
+        "error" => "All fields are required and fare must be greater than 0"
     ]);
+    exit;
 }
 
-$conn->close();
-?>
+// Check if driver is available
+$stmt = $conn->prepare("SELECT is_available FROM DriverDetails WHERE driver_id = ?");
+$stmt->bind_param("i", $driverId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    echo json_encode([
+        "success" => false,
+        "error" => "Driver profile not found"
+    ]);
+    exit;
+}
+
+$driverDetails = $result->fetch_assoc();
+if (!$driverDetails['is_available']) {
+    echo json_encode([
+        "success" => false,
+        "error" => "You are currently marked as unavailable"
+    ]);
+    exit;
+}
+
+// Insert the ride into the database
+$stmt = $conn->prepare("INSERT INTO Rides (driver_id, pickup_location, dropoff_location, ride_date, departure_time, total_seats, available_seats, fare, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')");
+$stmt->bind_param("issssiii", $driverId, $pickupLocation, $dropoffLocation, $rideDate, $departureTime, $totalSeats, $availableSeats, $fare);
+
+if ($stmt->execute()) {
+    $rideId = $conn->insert_id;
+    echo json_encode([
+        "success" => true,
+        "message" => "Ride published successfully",
+        "ride_id" => $rideId
+    ]);
+} else {
+    handleDatabaseError($conn, "Failed to publish ride");
+}
+?> 

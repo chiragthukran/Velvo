@@ -990,3 +990,233 @@ a:hover {
 .footer span {
     color: #ff4757;
 }
+
+/* Add CSS for search results on the index page */
+.search-results-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.search-results-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.search-results-header h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.search-results-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.ride-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.ride-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.ride-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.ride-title {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+}
+
+.ride-status {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background-color: #e6f7ff;
+    color: #1a73e8;
+    text-transform: uppercase;
+}
+
+.ride-details {
+    margin-bottom: 15px;
+}
+
+.ride-details p {
+    margin: 8px 0;
+    color: #555;
+}
+
+.ride-details i {
+    width: 20px;
+    color: #777;
+    margin-right: 5px;
+}
+
+.ride-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ride-action-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-book {
+    background-color: #e6f7ff;
+    color: #1a73e8;
+}
+
+.btn-book:hover {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.no-results, .loading, .search-error {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+}
+
+.no-results-icon, .search-error-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: #999;
+}
+
+.no-results h3, .search-error h3 {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+/* Login prompt overlay */
+.prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.login-prompt {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.login-prompt h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.login-prompt p {
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.prompt-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-login, .btn-signup {
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btn-login {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.btn-signup {
+    background-color: #e6f7ff;
+    color: #1a73e8;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f1f3f5;
+    color: #495057;
+    cursor: pointer;
+}
+
+/* Notification container and styles */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.success {
+    border-left: 4px solid #0ca678;
+}
+
+.notification.error {
+    border-left: 4px solid #e03131;
+}
+
+.notification.info {
+    border-left: 4px solid #1a73e8;
+}
+
+/* User greeting in navbar */
+.user-greeting {
+    margin-right: 15px;
+    color: #333;
+    font-weight: bold;
+}
