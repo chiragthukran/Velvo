@@ -3,6 +3,9 @@
 ## Preview - [Visit Our Website](velvo.great-site.net)
 [![Website Preview](images/preview.png)](https://velvo.great-site.net)
 
+## Data Flow Diagram
+[![Website Preview](images/dataflow.png)](https://velvo.great-site.net)
+
 ## Project Structure
 ├── public
 
